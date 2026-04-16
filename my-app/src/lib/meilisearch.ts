@@ -18,11 +18,19 @@ export const meiliSearch = {
         hits,
         estimatedTotalHits: results.length,
         offset,
-        limit
+        limit,
+        processingTimeMs: 1,
+        query
       };
     },
     addDocuments: async (docs: any[]) => {
-      // 数据已在 memoryStore 中
+      return { taskUid: 1 };
+    },
+    getDocument: async (id: string) => {
+      return memoryStore.getContentById(id);
+    },
+    deleteDocument: async (id: string) => {
+      memoryStore.contents.delete(id);
       return { taskUid: 1 };
     },
     updateSettings: async () => ({
