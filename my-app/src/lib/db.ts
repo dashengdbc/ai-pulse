@@ -15,11 +15,17 @@ export const prisma = {
         if (args.where.source) {
           results = results.filter(item => item.source === args.where.source);
         }
+        if (args.where.sourceId) {
+          results = results.filter(item => item.sourceId === args.where.sourceId);
+        }
         if (args.where.language) {
           results = results.filter(item => item.language === args.where.language);
         }
         if (args.where.status) {
           results = results.filter(item => item.status === args.where.status);
+        }
+        if (args.where.id) {
+          results = results.filter(item => item.id === args.where.id);
         }
       }
 
@@ -27,15 +33,10 @@ export const prisma = {
         results.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
       }
 
-      if (args?.take) {
-        results = results.slice(0, args.take);
-      }
+      const skip = args?.skip || 0;
+      const take = args?.take || results.length;
 
-      if (args?.skip) {
-        results = results.slice(args.skip);
-      }
-
-      return results;
+      return results.slice(skip, skip + take);
     },
     findUnique: async (args: any) => {
       if (args.where.id) {
@@ -64,9 +65,18 @@ export const prisma = {
         if (args.where.source) {
           results = results.filter((item: any) => item.source === args.where.source);
         }
+        if (args.where.sourceId) {
+          results = results.filter((item: any) => item.sourceId === args.where.sourceId);
+        }
         return results.length;
       }
       return memoryStore.contents.size;
+    },
+    delete: async (args: any) => {
+      if (args.where.id) {
+        memoryStore.contents.delete(args.where.id);
+      }
+      return { success: true };
     },
     deleteMany: async () => {
       const count = memoryStore.contents.size;

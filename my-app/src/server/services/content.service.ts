@@ -107,7 +107,7 @@ export async function deleteContent(id: string): Promise<void> {
 
 export async function checkDuplicate(url: string, sourceId: string): Promise<boolean> {
   const id = generateId(sourceId, url);
-  const existing = await prisma.content.findUnique({ where: { id }, select: { id: true } });
+  const existing = await prisma.content.findUnique({ where: { id } });
   return !!existing;
 }
 

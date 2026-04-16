@@ -12,9 +12,25 @@ export const redis = {
     setTimeout(() => memoryCache.delete(key), seconds * 1000);
     return 'OK';
   },
-  del: async (key: string) => {
-    memoryCache.delete(key);
-    return 1;
+  del: async (...keys: string[]) => {
+    let count = 0;
+    for (const key of keys) {
+      // 支持 pattern 匹配删除 (如 'content:list:*')
+      if (key.includes('*')) {
+        const pattern = key.replace('*', '.*');
+        const regex = new RegExp('^' + pattern + '$');
+        for (const [k] of memoryCache) {
+          if (regex.test(k)) {
+            memoryCache.delete(k);
+            count++;
+          }
+        }
+      } else if (memoryCache.has(key)) {
+        memoryCache.delete(key);
+        count++;
+      }
+    }
+    return count;
   },
   exists: async (key: string) => memoryCache.has(key) ? 1 : 0,
   on: () => {}, // 模拟事件监听
