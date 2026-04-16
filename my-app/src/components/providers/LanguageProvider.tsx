@@ -36,15 +36,6 @@ const translations: Record<Language, Translations> = {
       },
       clear: "清除筛选",
     },
-    categories: {
-      all: "全部",
-      llm: "大语言模型",
-      vision: "计算机视觉",
-      robotics: "机器人",
-      nlp: "自然语言处理",
-      ml: "机器学习",
-      multimodal: "多模态",
-    },
     sources: {
       all: "全部来源",
       arxiv: "arXiv",
@@ -105,15 +96,6 @@ const translations: Record<Language, Translations> = {
         year: "This Year",
       },
       clear: "Clear Filters",
-    },
-    categories: {
-      all: "All",
-      llm: "Large Language Models",
-      vision: "Computer Vision",
-      robotics: "Robotics",
-      nlp: "Natural Language Processing",
-      ml: "Machine Learning",
-      multimodal: "Multimodal",
     },
     sources: {
       all: "All Sources",

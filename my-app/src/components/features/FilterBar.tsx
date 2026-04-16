@@ -14,21 +14,10 @@ import {
   Filter,
   ChevronDown,
   Clock,
-  Tag,
   Database,
   X,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-
-const getCategories = (t: (key: string) => string | object) => [
-  { id: "all", label: t("categories.all") as string },
-  { id: "llm", label: t("categories.llm") as string },
-  { id: "vision", label: t("categories.vision") as string },
-  { id: "robotics", label: t("categories.robotics") as string },
-  { id: "nlp", label: t("categories.nlp") as string },
-  { id: "ml", label: t("categories.ml") as string },
-  { id: "multimodal", label: t("categories.multimodal") as string },
-];
 
 const sources = [
   { id: "all", labelKey: "sources.all" },
@@ -44,33 +33,23 @@ const timeRanges = [
 ];
 
 interface FilterBarProps {
-  selectedCategory?: string;
   selectedSource?: string;
   selectedTimeRange?: string;
-  onCategoryChange?: (category: string) => void;
   onSourceChange?: (source: string) => void;
   onTimeRangeChange?: (timeRange: string) => void;
 }
 
 export function FilterBar({
-  selectedCategory: externalCategory,
   selectedSource: externalSource,
   selectedTimeRange: externalTimeRange,
-  onCategoryChange,
   onSourceChange,
   onTimeRangeChange,
 }: FilterBarProps = {}) {
   const { t } = useLanguage();
-  const categories = getCategories(t);
-  const [selectedCategory, setSelectedCategory] = useState(externalCategory || "all");
   const [selectedSource, setSelectedSource] = useState(externalSource || "all");
   const [selectedTimeRange, setSelectedTimeRange] = useState(externalTimeRange || "week");
 
   // 同步外部状态
-  useEffect(() => {
-    if (externalCategory !== undefined) setSelectedCategory(externalCategory);
-  }, [externalCategory]);
-
   useEffect(() => {
     if (externalSource !== undefined) setSelectedSource(externalSource);
   }, [externalSource]);
@@ -80,14 +59,8 @@ export function FilterBar({
   }, [externalTimeRange]);
 
   const hasActiveFilters =
-    selectedCategory !== "all" ||
     selectedSource !== "all" ||
     selectedTimeRange !== "week";
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    onCategoryChange?.(category);
-  };
 
   const handleSourceChange = (source: string) => {
     setSelectedSource(source);
@@ -100,10 +73,8 @@ export function FilterBar({
   };
 
   const clearFilters = () => {
-    setSelectedCategory("all");
     setSelectedSource("all");
     setSelectedTimeRange("week");
-    onCategoryChange?.("all");
     onSourceChange?.("all");
     onTimeRangeChange?.("week");
   };
@@ -121,40 +92,6 @@ export function FilterBar({
             <Filter className="h-4 w-4" />
             <span className="text-sm font-medium hidden sm:inline">{t("filter.title") as string}</span>
           </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className={`inline-flex items-center justify-center h-9 gap-2 px-3 text-sm font-medium rounded-lg border border-[var(--border-secondary)] bg-[var(--bg-secondary)] ${
-                selectedCategory !== "all"
-                  ? "text-[var(--accent-orange)] border-[var(--accent-orange)]/50"
-                  : "text-[var(--text-secondary)]"
-              }`}
-            >
-              <Tag className="h-4 w-4" />
-              <span>
-                {categories.find((c) => c.id === selectedCategory)?.label}
-              </span>
-              <ChevronDown className="h-3 w-3" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              className="bg-[var(--bg-secondary)] border-[var(--border-secondary)]"
-            >
-              {categories.map((category) => (
-                <DropdownMenuItem
-                  key={category.id}
-                  onClick={() => handleCategoryChange(category.id)}
-                  className={`cursor-pointer ${
-                    selectedCategory === category.id
-                      ? "text-[var(--accent-orange)]"
-                      : "text-[var(--text-secondary)]"
-                  } hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]`}
-                >
-                  {category.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
 
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -234,14 +171,6 @@ export function FilterBar({
           )}
 
           <div className="flex items-center gap-2 ml-auto">
-            {selectedCategory !== "all" && (
-              <Badge
-                variant="secondary"
-                className="bg-[var(--accent-orange)]/10 text-[var(--accent-orange)] border-0"
-              >
-                {categories.find((c) => c.id === selectedCategory)?.label}
-              </Badge>
-            )}
             {selectedSource !== "all" && (
               <Badge
                 variant="secondary"
