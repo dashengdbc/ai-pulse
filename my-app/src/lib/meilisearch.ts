@@ -11,8 +11,15 @@ export const meiliSearch = {
         item.originalTitle?.includes(query) ||
         item.tags?.some((tag: string) => tag.includes(query))
       );
-      const hits = results.slice(0, options?.limit || 20);
-      return { hits, estimatedTotalHits: results.length };
+      const limit = options?.limit || 20;
+      const offset = options?.offset || 0;
+      const hits = results.slice(offset, offset + limit);
+      return {
+        hits,
+        estimatedTotalHits: results.length,
+        offset,
+        limit
+      };
     },
     addDocuments: async (docs: any[]) => {
       // 数据已在 memoryStore 中
