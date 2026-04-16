@@ -66,7 +66,7 @@ const translations: Record<Language, Translations> = {
       subtitle: "追踪改变游戏规则的里程碑式研究",
     },
     footer: {
-      copyright: "© 2024 AI Pulse. All rights reserved.",
+      copyright: "© 2026 AI Pulse. All rights reserved.",
     },
   },
   en: {
@@ -127,7 +127,7 @@ const translations: Record<Language, Translations> = {
       subtitle: "Tracking game-changing milestone research",
     },
     footer: {
-      copyright: "© 2024 AI Pulse. All rights reserved.",
+      copyright: "© 2026 AI Pulse. All rights reserved.",
     },
   },
 };
