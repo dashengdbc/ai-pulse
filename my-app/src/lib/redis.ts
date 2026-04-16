@@ -33,6 +33,10 @@ export const redis = {
     return count;
   },
   exists: async (key: string) => memoryCache.has(key) ? 1 : 0,
+  keys: async (pattern: string) => {
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+    return Array.from(memoryCache.keys()).filter(k => regex.test(k));
+  },
   on: () => {}, // 模拟事件监听
 };
 
