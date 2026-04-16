@@ -41,8 +41,6 @@ const sources = [
 const timeRanges = [
   { id: "today", labelKey: "filter.timeRange.today" },
   { id: "week", labelKey: "filter.timeRange.week" },
-  { id: "month", labelKey: "filter.timeRange.month" },
-  { id: "year", labelKey: "filter.timeRange.year" },
 ];
 
 interface FilterBarProps {
