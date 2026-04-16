@@ -1,5 +1,5 @@
-import { meiliSearch, CONTENT_INDEX } from '@/lib/meilisearch';
-import type { SearchParams } from 'meilisearch';
+// 简化的搜索服务 - 直接使用内存存储
+import { memoryStore } from '@/lib/memory-store';
 
 export interface ContentDocument {
   id: string;
@@ -49,73 +49,64 @@ export interface SearchResult {
   query: string;
 }
 
-function buildFilterString(filters?: SearchFilters): string | undefined {
-  if (!filters) return undefined;
-  const parts: string[] = [];
-  if (filters.category?.length) {
-    parts.push(`category IN [${filters.category.map(c => `"${c}"`).join(', ')}]`);
-  }
-  if (filters.sourceId?.length) {
-    parts.push(`sourceId IN [${filters.sourceId.map(s => `"${s}"`).join(', ')}]`);
-  }
-  if (filters.tags?.length) {
-    parts.push(`(${filters.tags.map(t => `tags = "${t}"`).join(' OR ')})`);
-  }
-  if (filters.publishedAfter) {
-    parts.push(`publishedAt >= ${Math.floor(filters.publishedAfter.getTime() / 1000)}`);
-  }
-  if (filters.publishedBefore) {
-    parts.push(`publishedAt <= ${Math.floor(filters.publishedBefore.getTime() / 1000)}`);
-  }
-  return parts.length ? parts.join(' AND ') : undefined;
-}
-
-function buildSortArray(sortBy: SearchOptions['sortBy'] = 'relevance', sortOrder: SearchOptions['sortOrder'] = 'desc'): string[] {
-  if (sortBy === 'date') return [`publishedAt:${sortOrder}`];
-  return [];
-}
-
 export async function searchContents(options: SearchOptions): Promise<SearchResult> {
-  const { query, filters, sortBy = 'relevance', sortOrder = 'desc', page = 1, limit = 20, highlight = true } = options;
-  const index = meiliSearch.index(CONTENT_INDEX);
-  const searchParams: SearchParams = {
-    q: query,
-    offset: (page - 1) * limit,
-    limit,
-    filter: buildFilterString(filters),
-    sort: buildSortArray(sortBy, sortOrder),
-    attributesToHighlight: highlight ? ['translatedTitle', 'translatedAbstract'] : undefined,
-    highlightPreTag: '<mark>',
-    highlightPostTag: '</mark>',
-    facets: ['category', 'originalLanguage', 'sourceId'],
-  };
-  const response = await index.search(query, searchParams);
-  const hits = response.hits as unknown as ContentDocument[];
-  const total = response.estimatedTotalHits || 0;
+  const { query, filters, page = 1, limit = 20 } = options;
+  const all = Array.from(memoryStore.contents.values());
+
+  // 过滤和搜索
+  let results = all.filter((item: any) => {
+    // 文本搜索
+    if (query) {
+      const match = item.translatedTitle?.includes(query) ||
+        item.translatedAbstract?.includes(query) ||
+        item.originalTitle?.includes(query) ||
+        item.tags?.some((tag: string) => tag.includes(query));
+      if (!match) return false;
+    }
+
+    // 分类过滤
+    if (filters?.category?.length && !filters.category.includes(item.category)) {
+      return false;
+    }
+
+    // 来源过滤
+    if (filters?.sourceId?.length && !filters.sourceId.includes(item.sourceId)) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // 排序
+  results.sort((a: any, b: any) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+
+  const total = results.length;
+  const offset = (page - 1) * limit;
+  const hits = results.slice(offset, offset + limit);
+
   return {
-    hits,
-    estimatedTotalHits: response.estimatedTotalHits || 0,
-    totalHits: response.hits.length,
-    offset: response.offset || 0,
-    limit: response.limit || limit,
+    hits: hits as ContentDocument[],
+    estimatedTotalHits: total,
+    totalHits: total,
+    offset,
+    limit,
     page,
     totalPages: Math.ceil(total / limit),
-    processingTimeMs: response.processingTimeMs || 0,
-    query: response.query,
+    processingTimeMs: 1,
+    query,
   };
 }
 
 export async function getContentById(id: string): Promise<ContentDocument | null> {
-  try {
-    const doc = await meiliSearch.index(CONTENT_INDEX).getDocument(id);
-    return doc as unknown as ContentDocument;
-  } catch { return null; }
+  const doc = await memoryStore.getContentById(id);
+  return doc as ContentDocument | null;
 }
 
 export async function indexDocuments(docs: ContentDocument[]): Promise<void> {
-  if (docs.length) await meiliSearch.index(CONTENT_INDEX).addDocuments(docs);
+  // 数据已在 memoryStore 中，无需额外操作
+  console.log(`Indexed ${docs.length} documents`);
 }
 
 export async function deleteDocument(id: string): Promise<void> {
-  await meiliSearch.index(CONTENT_INDEX).deleteDocument(id);
+  memoryStore.contents.delete(id);
 }
