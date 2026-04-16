@@ -1,31 +1,23 @@
-import Redis from 'ioredis';
+// 内存存储作为 Redis 兼容层
+const memoryCache = new Map<string, string>();
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
-
-const globalForRedis = globalThis as unknown as {
-  redis: Redis | undefined;
+export const redis = {
+  get: async (key: string) => memoryCache.get(key) || null,
+  set: async (key: string, value: string, ...args: any[]) => {
+    memoryCache.set(key, value);
+    return 'OK';
+  },
+  setex: async (key: string, seconds: number, value: string) => {
+    memoryCache.set(key, value);
+    setTimeout(() => memoryCache.delete(key), seconds * 1000);
+    return 'OK';
+  },
+  del: async (key: string) => {
+    memoryCache.delete(key);
+    return 1;
+  },
+  exists: async (key: string) => memoryCache.has(key) ? 1 : 0,
+  on: () => {}, // 模拟事件监听
 };
-
-export const redis =
-  globalForRedis.redis ??
-  new Redis(REDIS_URL, {
-    retryStrategy: (times) => {
-      const delay = Math.min(times * 50, 2000);
-      return delay;
-    },
-    maxRetriesPerRequest: 3,
-  });
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForRedis.redis = redis;
-}
-
-redis.on('error', (err) => {
-  console.error('Redis connection error:', err);
-});
-
-redis.on('connect', () => {
-  console.log('Redis connected successfully');
-});
 
 export default redis;

@@ -1,60 +1,32 @@
-import { Meilisearch } from 'meilisearch';
+// 内存搜索作为 Meilisearch 兼容层
+import { memoryStore } from './memory-store';
 
-const MEILISEARCH_HOST = process.env.MEILISEARCH_HOST || 'http://localhost:7700';
-const MEILISEARCH_API_KEY = process.env.MEILISEARCH_API_KEY || '';
-
-const globalForMeili = globalThis as unknown as {
-  meiliSearch: Meilisearch | undefined;
+export const meiliSearch = {
+  index: (name: string) => ({
+    search: async (query: string, options?: any) => {
+      const all = memoryStore.getAll();
+      const results = all.filter(item =>
+        item.translatedTitle?.includes(query) ||
+        item.translatedAbstract?.includes(query) ||
+        item.originalTitle?.includes(query) ||
+        item.tags?.some((tag: string) => tag.includes(query))
+      );
+      return { hits: results.slice(0, options?.limit || 20) };
+    },
+    addDocuments: async (docs: any[]) => {
+      // 数据已在 memoryStore 中
+      return { taskUid: 1 };
+    },
+    updateSettings: async () => ({
+      taskUid: 1
+    }),
+  }),
 };
-
-export const meiliSearch =
-  globalForMeili.meiliSearch ??
-  new Meilisearch({
-    host: MEILISEARCH_HOST,
-    apiKey: MEILISEARCH_API_KEY,
-  });
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForMeili.meiliSearch = meiliSearch;
-}
 
 export const CONTENT_INDEX = 'contents';
 
 export async function initializeIndexes(): Promise<void> {
-  try {
-    const index = meiliSearch.index(CONTENT_INDEX);
-    
-    await index.updateSettings({
-      searchableAttributes: [
-        'translatedTitle',
-        'translatedAbstract',
-        'originalTitle',
-        'originalAbstract',
-        'tags',
-        'author',
-      ],
-      filterableAttributes: [
-        'category',
-        'originalLanguage',
-        'sourceId',
-        'publishedAt',
-        'tags',
-      ],
-      sortableAttributes: ['publishedAt', 'createdAt', 'updatedAt'],
-      rankingRules: [
-        'words',
-        'typo',
-        'proximity',
-        'attribute',
-        'sort',
-        'exactness',
-      ],
-    });
-
-    console.log('Meilisearch indexes initialized');
-  } catch (error) {
-    console.error('Failed to initialize Meilisearch:', error);
-  }
+  console.log('Memory search indexes initialized');
 }
 
 export default meiliSearch;
