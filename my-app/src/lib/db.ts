@@ -5,7 +5,7 @@ import { memoryStore } from './memory-store';
 export const prisma = {
   content: {
     findMany: async (args?: any) => {
-      const all = memoryStore.getAll();
+      const all = Array.from(memoryStore.contents.values());
       let results = [...all];
 
       if (args?.where) {
@@ -39,39 +39,38 @@ export const prisma = {
     },
     findUnique: async (args: any) => {
       if (args.where.id) {
-        return memoryStore.getById(args.where.id) || null;
+        return memoryStore.getContentById(args.where.id);
       }
       if (args.where.url) {
-        return memoryStore.getByUrl(args.where.url) || null;
+        return Array.from(memoryStore.contents.values()).find(
+          (item: any) => item.url === args.where.url
+        ) || null;
       }
       return null;
     },
     create: async (args: any) => {
-      memoryStore.add(args.data);
-      return args.data;
+      return memoryStore.createContent(args.data);
     },
     createMany: async (args: any) => {
-      for (const item of args.data) {
-        memoryStore.add(item);
-      }
-      return { count: args.data.length };
+      const count = await memoryStore.batchCreate(args.data);
+      return { count };
     },
     count: async (args?: any) => {
       if (args?.where) {
-        let results = memoryStore.getAll();
+        let results = Array.from(memoryStore.contents.values());
         if (args.where.category) {
-          results = results.filter(item => item.category === args.where.category);
+          results = results.filter((item: any) => item.category === args.where.category);
         }
         if (args.where.source) {
-          results = results.filter(item => item.source === args.where.source);
+          results = results.filter((item: any) => item.source === args.where.source);
         }
         return results.length;
       }
-      return memoryStore.count();
+      return memoryStore.contents.size;
     },
     deleteMany: async () => {
-      const count = memoryStore.count();
-      memoryStore.clear();
+      const count = memoryStore.contents.size;
+      memoryStore.contents.clear();
       return { count };
     },
   },

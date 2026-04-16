@@ -4,8 +4,8 @@ import { memoryStore } from './memory-store';
 export const meiliSearch = {
   index: (name: string) => ({
     search: async (query: string, options?: any) => {
-      const all = memoryStore.getAll();
-      const results = all.filter(item =>
+      const all = Array.from(memoryStore.contents.values());
+      const results = all.filter((item: any) =>
         item.translatedTitle?.includes(query) ||
         item.translatedAbstract?.includes(query) ||
         item.originalTitle?.includes(query) ||
