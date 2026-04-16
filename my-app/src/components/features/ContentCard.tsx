@@ -64,21 +64,33 @@ const sourceConfig: Record<
   },
 };
 
-// 格式化发布时间
-function formatPublishedAt(dateString: string, t: (key: string) => string | object): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSecs = Math.floor(diffMs / 1000);
-  const diffMins = Math.floor(diffSecs / 60);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
+// 客户端时间格式化钩子
+function useFormattedTime(dateString: string, t: (key: string) => string | object): string {
+  const [formatted, setFormatted] = useState<string>("");
 
-  if (diffSecs < 60) return t("content.justNow") as string;
-  if (diffMins < 60) return `${diffMins}${t("content.minutesAgo")}`;
-  if (diffHours < 24) return `${diffHours}${t("content.hoursAgo")}`;
-  if (diffDays < 7) return `${diffDays}${t("content.daysAgo")}`;
-  return date.toLocaleDateString("zh-CN");
+  useState(() => {
+    // 只在客户端执行
+    if (typeof window !== "undefined") {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffSecs = Math.floor(diffMs / 1000);
+      const diffMins = Math.floor(diffSecs / 60);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      let result: string;
+      if (diffSecs < 60) result = t("content.justNow") as string;
+      else if (diffMins < 60) result = `${diffMins}${t("content.minutesAgo")}`;
+      else if (diffHours < 24) result = `${diffHours}${t("content.hoursAgo")}`;
+      else if (diffDays < 7) result = `${diffDays}${t("content.daysAgo")}`;
+      else result = date.toLocaleDateString("zh-CN");
+
+      setFormatted(result);
+    }
+  });
+
+  return formatted || new Date(dateString).toLocaleDateString("zh-CN");
 }
 
 export function ContentCard({
@@ -222,7 +234,7 @@ export function ContentCard({
           <div className="flex items-center gap-4 mt-4 text-xs text-[var(--text-tertiary)]">
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              <span>{formatPublishedAt(publishedAt, t)}</span>
+              <span>{useFormattedTime(publishedAt, t)}</span>
             </div>
             {author && (
               <div className="flex items-center gap-1">
