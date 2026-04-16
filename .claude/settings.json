@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(/c/Users/党博超/Desktop/交互网站设计/my-app/node_modules/.bin/tsc --noEmit)",
+      "Bash(npm run *)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npx next build)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\党博超\\Desktop\\交互网站设计\\my-app\\src\\server\\jobs",
+      "c:\\Users\\党博超\\Desktop\\交互网站设计\\my-app\\src\\app\\api"
+    ]
+  }
+}

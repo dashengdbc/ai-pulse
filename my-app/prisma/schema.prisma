@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Content {
+  id                 String        @id @default(cuid())
+  sourceId           String
+  externalId         String?
+  url                String        @unique
+  originalTitle      String
+  originalAbstract   String?       @db.Text
+  originalLanguage   String        @default("en")
+  translatedTitle    String?
+  translatedAbstract String?       @db.Text
+  author             String?
+  authorUrl          String?
+  imageUrl           String?
+  publishedAt        DateTime
+  fetchedAt          DateTime      @default(now())
+  category           Category
+  tags               String[]
+  viewCount          Int           @default(0)
+  status             ContentStatus @default(PENDING)
+  isBreakthrough     Boolean       @default(false)
+
+  @@index([publishedAt])
+  @@index([category])
+  @@index([sourceId])
+  @@index([status])
+  @@index([isBreakthrough])
+}
+
+enum Category {
+  AI_RESEARCH
+  ROBOTICS_RESEARCH
+  OPEN_SOURCE
+  INDUSTRY_NEWS
+  TUTORIAL
+  TOOL
+}
+
+enum ContentStatus {
+  PENDING
+  TRANSLATING
+  PUBLISHED
+  HIDDEN
+  ERROR
+}

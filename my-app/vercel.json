@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "name": "ai-pulse",
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["hkg1"],
+  "crons": [
+    {
+      "path": "/api/cron/crawl",
+      "schedule": "0 */6 * * *"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_APP_NAME": "AI Pulse",
+    "NEXT_PUBLIC_APP_DESCRIPTION": "AI/Robotics News Aggregator"
+  }
+}
