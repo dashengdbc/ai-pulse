@@ -11,7 +11,8 @@ export const meiliSearch = {
         item.originalTitle?.includes(query) ||
         item.tags?.some((tag: string) => tag.includes(query))
       );
-      return { hits: results.slice(0, options?.limit || 20) };
+      const hits = results.slice(0, options?.limit || 20);
+      return { hits, estimatedTotalHits: results.length };
     },
     addDocuments: async (docs: any[]) => {
       // 数据已在 memoryStore 中
